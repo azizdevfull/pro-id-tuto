@@ -32,7 +32,7 @@ class OAuth2Controller extends Controller
                 'state' => 'abcdabcdabcdabcdabcd',
                 'prompt' => 'consent',
             ]);
-            return redirect('https://id.in-pro.net/oauth/authorize?' . $query);
+            return redirect('http://localhost:5173/oauth?' . $query);
         } else {
             return response()->json([
                 'message' => __('errors client does not have permission')
@@ -42,7 +42,8 @@ class OAuth2Controller extends Controller
 
     public function handleProIdCallback($isMobileOrWeb, Request $request): JsonResponse|Redirector|Application|RedirectResponse
     {
-        // info('salom');
+        info($request->all());
+        // dd($request->all());
         $clientData = [
             'web_client' => [
                 'client_id' => 41,
@@ -53,9 +54,9 @@ class OAuth2Controller extends Controller
         $clientSecret = $clientData[$isMobileOrWeb]['client_secret'];
         $clientId = $clientData[$isMobileOrWeb]['client_id'];
         $callbackUri = "http://localhost:8000/api/oauth/proid/$isMobileOrWeb/callback";
-
+        // dd($request->code);
         //getting user data
-        $response = Http::asForm()->post('https://id.in-pro.net/oauth/token', [
+        $response = Http::asForm()->post('https://newmoto.uz/api/v2/oauth/token', [
             'grant_type' => 'authorization_code',
             'client_id' => $clientId,
             'client_secret' => $clientSecret,
@@ -64,12 +65,13 @@ class OAuth2Controller extends Controller
         ]);
 
         $responseData = $response->json();
+        info($responseData);
         $accessToken = $responseData['access_token'];
 
-        $userRes = Http::withToken($accessToken)->get('https://id.in-pro.net/api/user');
+        $userRes = Http::withToken($accessToken)->get('https://newmoto.uz/api/user');
 
         $userData = $userRes->json();
-        dd($userData);
+        // dd($userData);
 
         $provider = 'proid';
 
